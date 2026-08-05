@@ -1,1 +1,40 @@
+# Dependencies
+node_modules/
+**/node_modules/
+vendor/
+**/vendor/
+
+# Next.js & Build outputs
+.next/
+**/.next/
+out/
+**/out/
+build/
+**/build/
+dist/
+**/dist/
+
+# Laravel backend storage, database & cache
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*
+backend/database/*.sqlite
+backend/.phpunit.result.cache
+.phpunit.result.cache
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.env
+
+# Vercel & IDE
 .vercel
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

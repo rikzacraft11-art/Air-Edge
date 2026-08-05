@@ -17,38 +17,58 @@ async function apiFetch<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...options.headers,
+      },
+      ...options,
+    });
 
-  let data: any;
-  const contentType = response.headers.get("content-type") || "";
+    let data: any;
+    const contentType = response.headers.get("content-type") || "";
 
-  if (contentType.includes("application/json")) {
-    try {
-      data = await response.json();
-    } catch {
-      data = { message: "Gagal membaca respon JSON dari server." };
+    if (contentType.includes("application/json")) {
+      try {
+        data = await response.json();
+      } catch {
+        data = { message: "Gagal membaca respon JSON dari server." };
+      }
+    } else {
+      const text = await response.text();
+      data = { message: text || `Terjadi kesalahan pada server (${response.status}).` };
     }
-  } else {
-    const text = await response.text();
-    data = { message: text || `Terjadi kesalahan pada server (${response.status}).` };
-  }
 
-  if (!response.ok) {
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: data.message || "Terjadi kesalahan. Silakan coba lagi.",
+        data: data.data || null,
+      };
+    }
+
+    return data;
+  } catch (error: any) {
+    if (error && typeof error.status === "number") {
+      throw error;
+    }
+
+    const isNetworkError =
+      error?.name === "TypeError" ||
+      error?.message?.includes("Load failed") ||
+      error?.message?.includes("Failed to fetch") ||
+      error?.message?.includes("NetworkError");
+
     throw {
-      status: response.status,
-      message: data.message || "Terjadi kesalahan. Silakan coba lagi.",
-      data: data.data || null,
+      status: 0,
+      message: isNetworkError
+        ? "Koneksi terputus saat mengirim data. Silakan periksa koneksi internet Anda dan tekan tombol pendaftaran kembali."
+        : error?.message || "Terjadi kesalahan koneksi.",
+      data: null,
     };
   }
-
-  return data;
 }
 
 // ============================================
